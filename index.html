@@ -3,740 +3,663 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alex - 3D Motion Artist</title>
+    <title>ALEX // DIGITAL ALCHEMIST</title>
+    
+    <!-- FONT IMPORTS: Editorial Serif + Brutalist Mono + Handwriting -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,400&family=Reenie+Beanie&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* ==================== 1. CORE VARIABLES ==================== */
+        :root {
+            --bg-color: #050505;
+            --text-color: #E0E0E0;
+            --accent-color: #CCFF00;
+            --secondary-bg: #0F0F0F;
+            --font-editorial: 'Cormorant Garamond', serif;
+            --font-tech: 'Space Mono', monospace;
+            --font-human: 'Reenie Beanie', cursive;
         }
+
+        /* ==================== 2. RESET & BASE ==================== */
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
 
         body {
-            font-family: 'Space Grotesk', 'Inter', -apple-system, sans-serif;
-            background: #0a0a0a;
-            color: #ffffff;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-tech);
             overflow-x: hidden;
-            cursor: none;
-        }
-
-        /* CUSTOM CURSOR */
-        .cursor {
-            width: 40px;
-            height: 40px;
-            border: 2px solid #00ffff;
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            mix-blend-mode: difference;
-            transition: transform 0.15s ease-out, width 0.3s, height 0.3s;
-            transform: translate(-50%, -50%);
-        }
-
-        .cursor.hover {
-            width: 80px;
-            height: 80px;
-            background: rgba(0, 255, 255, 0.1);
-        }
-
-        /* FILM GRAIN OVERLAY */
-        .grain-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1000;
-            opacity: 0.08;
-            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="6.5" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
-            animation: grain 8s steps(10) infinite;
-        }
-
-        @keyframes grain {
-            0%, 100% { transform: translate(0, 0); }
-            10% { transform: translate(-5%, -10%); }
-            20% { transform: translate(-15%, 5%); }
-            30% { transform: translate(7%, -25%); }
-            40% { transform: translate(-5%, 25%); }
-            50% { transform: translate(-15%, 10%); }
-            60% { transform: translate(15%, 0%); }
-            70% { transform: translate(0%, 15%); }
-            80% { transform: translate(3%, 35%); }
-            90% { transform: translate(-10%, 10%); }
-        }
-
-        /* THREE.JS CANVAS */
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        /* CONTENT LAYERS */
-        .content {
-            position: relative;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .content > * {
-            pointer-events: auto;
-        }
-
-        /* HERO SECTION */
-        .hero {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            position: relative;
-        }
-
-        .hero h1 {
-            font-size: clamp(3rem, 10vw, 8rem);
-            font-weight: 900;
-            letter-spacing: -0.02em;
-            line-height: 0.9;
-            text-transform: uppercase;
-            background: linear-gradient(135deg, #00ffff, #ff00ff, #00ffff);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradient-shift 4s ease infinite;
-        }
-
-        @keyframes gradient-shift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .hero .subtitle {
-            font-size: clamp(1rem, 2vw, 1.5rem);
-            color: #888;
-            margin-top: 1rem;
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
-        }
-
-        .glitch {
-            position: relative;
-            display: inline-block;
-        }
-
-        .glitch::before,
-        .glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a0a0a;
-        }
-
-        .glitch::before {
-            left: 2px;
-            text-shadow: -2px 0 #ff00ff;
-            clip: rect(44px, 450px, 56px, 0);
-            animation: glitch-anim 5s infinite linear alternate-reverse;
-        }
-
-        .glitch::after {
-            left: -2px;
-            text-shadow: -2px 0 #00ffff;
-            clip: rect(44px, 450px, 56px, 0);
-            animation: glitch-anim 3s infinite linear alternate-reverse;
-        }
-
-        @keyframes glitch-anim {
-            0% { clip: rect(10px, 9999px, 31px, 0); }
-            20% { clip: rect(70px, 9999px, 71px, 0); }
-            40% { clip: rect(121px, 9999px, 122px, 0); }
-            60% { clip: rect(45px, 9999px, 98px, 0); }
-            80% { clip: rect(31px, 9999px, 135px, 0); }
-            100% { clip: rect(83px, 9999px, 61px, 0); }
-        }
-
-        /* SCROLLYTELLING SECTION */
-        .scroll-section {
-            min-height: 200vh;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10rem 2rem;
-        }
-
-        .kinetic-text {
-            font-size: clamp(2rem, 6vw, 5rem);
-            font-weight: 900;
-            line-height: 1.2;
-            max-width: 1200px;
-            text-align: center;
-        }
-
-        .kinetic-text .word {
-            display: inline-block;
-            margin: 0 0.5rem;
-            opacity: 0.3;
-            transform-origin: center;
-        }
-
-        .kinetic-text .word.active {
-            opacity: 1;
-            color: #00ffff;
-        }
-
-        /* INTERACTIVE LAB SECTION */
-        .lab-section {
+            width: 100vw;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 5rem 2rem;
-            position: relative;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .lab-title {
-            font-size: clamp(2rem, 5vw, 4rem);
-            font-weight: 900;
-            margin-bottom: 2rem;
-            text-align: center;
-            color: #00ffff;
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        /* ==================== 3. TEXTURE & ATMOSPHERE ==================== */
+        .noise-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9000; opacity: 0.07;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
         }
 
-        .lab-instructions {
-            font-size: 1.2rem;
-            color: #888;
-            text-align: center;
-            margin-bottom: 3rem;
-            letter-spacing: 0.1em;
+        .vignette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 8000;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%);
         }
 
+        /* ==================== 4. THREE.JS CANVAS ==================== */
+        #canvas-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; opacity: 0; transition: opacity 1.5s ease;
+        }
+
+        /* ==================== 5. CUSTOM CURSOR ==================== */
+        .cursor-dot {
+            width: 8px; height: 8px; background: var(--accent-color);
+            border-radius: 50%; position: fixed; pointer-events: none;
+            z-index: 9999; transform: translate(-50%, -50%);
+        }
+
+        .cursor-outline {
+            width: 40px; height: 40px; border: 1px solid var(--text-color);
+            border-radius: 50%; position: fixed; pointer-events: none;
+            z-index: 9998; transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, background-color 0.3s;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-outline.hover {
+            width: 80px; height: 80px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-color);
+            backdrop-filter: blur(2px);
+        }
+
+        /* ==================== 6. UI ELEMENTS ==================== */
         /* SOUND TOGGLE */
         .sound-toggle {
-            position: fixed;
-            bottom: 3rem;
-            right: 3rem;
-            z-index: 100;
-            width: 60px;
-            height: 60px;
-            border: 2px solid #00ffff;
-            border-radius: 50%;
-            background: rgba(0, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            position: fixed; bottom: 2rem; right: 2rem;
+            z-index: 9500; width: 60px; height: 60px;
+            background: transparent; border: 1px solid var(--text-color);
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+            color: var(--accent-color); display: flex;
+            align-items: center; justify-content: center;
+            pointer-events: auto; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .sound-toggle:hover {
-            background: rgba(0, 255, 255, 0.3);
-            transform: scale(1.1);
+            transform: scale(1.1); background: rgba(204, 255, 0, 0.1);
+            border-color: var(--accent-color);
         }
 
-        .sound-toggle.active {
-            background: rgba(0, 255, 255, 0.5);
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        .sound-bars {
+            display: flex; gap: 4px; height: 20px; align-items: center;
         }
 
-        .sound-icon {
-            width: 24px;
-            height: 24px;
-            fill: #00ffff;
+        .bar {
+            width: 3px; background: var(--accent-color);
+            animation: none; height: 4px;
+        }
+
+        .sound-toggle.active .bar {
+            animation: soundWave 1s ease-in-out infinite;
+        }
+        .sound-toggle.active .bar:nth-child(1) { animation-delay: 0.0s; }
+        .sound-toggle.active .bar:nth-child(2) { animation-delay: 0.2s; }
+        .sound-toggle.active .bar:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes soundWave {
+            0%, 100% { height: 4px; } 50% { height: 20px; }
+        }
+
+        /* LAYOUT */
+        .content-wrapper { position: relative; z-index: 10; padding-bottom: 20vh; }
+
+        .hero {
+            height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center; padding: 2rem; position: relative;
+        }
+
+        .hero h1 {
+            font-family: var(--font-editorial);
+            font-size: clamp(4rem, 15vw, 12rem);
+            font-weight: 300; line-height: 0.8; letter-spacing: -0.04em;
+            text-transform: uppercase; mix-blend-mode: exclusion;
+            position: relative; z-index: 2;
+        }
+
+        .hero h1 span {
+            display: inline-block;
+            transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .hero h1:hover span {
+            transform: scaleY(1.1) skewX(-10deg); color: var(--accent-color);
+        }
+
+        .scribble {
+            font-family: var(--font-human); color: var(--accent-color);
+            position: absolute; font-size: 1.5rem; transform: rotate(-10deg);
+            pointer-events: none; z-index: 5;
+            text-shadow: 0 0 10px rgba(204, 255, 0, 0.5);
+        }
+
+        .hero .scribble { top: 30%; right: 20%; }
+        .hero-meta {
+            font-family: var(--font-tech); font-size: clamp(0.7rem, 1vw, 1rem);
+            margin-top: 2rem; text-transform: uppercase; letter-spacing: 0.2em;
+            display: flex; gap: 2rem; opacity: 0.7;
+        }
+
+        .manifesto {
+            min-height: 80vh; display: flex; align-items: center;
+            justify-content: center; padding: 10vw;
+        }
+
+        .manifesto p {
+            font-family: var(--font-editorial); font-size: clamp(2rem, 5vw, 4rem);
+            line-height: 1.2; text-align: center; max-width: 1200px;
+        }
+        
+        .manifesto .word {
+            display: inline-block; color: var(--text-color);
+            opacity: 0.1; transform: translateY(20px); filter: blur(10px);
+            transition: all 0.5s ease;
         }
 
         /* WORK SECTION */
-        .work-section {
-            min-height: 100vh;
-            padding: 5rem 2rem;
-            position: relative;
+        .work-section { padding: 5vw; }
+        .section-header {
+            font-family: var(--font-tech); font-size: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 1rem; margin-bottom: 5rem;
+            display: flex; justify-content: space-between;
         }
 
-        .work-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
+        .project-grid {
+            display: grid; grid-template-columns: repeat(12, 1fr);
+            gap: 2rem; margin-bottom: 15vh; align-items: center;
         }
 
-        .work-item {
-            aspect-ratio: 16/9;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .project-visual {
+            grid-column: 1 / 9; aspect-ratio: 16/9; position: relative;
+            overflow: hidden; border-radius: 4px; background: #111;
+        }
+        
+        .project-grid:nth-child(even) .project-visual { grid-column: 5 / 13; }
+        .project-grid:nth-child(even) .project-info {
+            grid-column: 2 / 6; text-align: right; order: -1;
         }
 
-        .work-item:hover {
+        .project-visual video {
+            width: 100%; height: 100%; object-fit: cover; opacity: 0.6;
+            transition: opacity 0.5s, transform 0.7s ease;
+            filter: grayscale(100%) contrast(1.2);
+        }
+
+        .project-visual:hover video {
+            opacity: 1; transform: scale(1.05); filter: grayscale(0%) contrast(1);
+        }
+
+        .project-info {
+            grid-column: 8 / 12; position: relative; z-index: 2;
+            pointer-events: none; mix-blend-mode: difference;
+        }
+
+        .project-number {
+            font-family: var(--font-tech); color: var(--accent-color);
+            font-size: 0.8rem; margin-bottom: 1rem; display: block;
+        }
+
+        .project-title {
+            font-family: var(--font-editorial);
+            font-size: clamp(3rem, 6vw, 5rem); line-height: 1; margin-bottom: 1rem;
+        }
+
+        .btn-organic {
+            display: inline-block; padding: 1rem 2rem; margin-top: 2rem;
+            background: transparent; border: 1px solid var(--text-color);
+            color: var(--text-color); font-family: var(--font-tech);
+            text-transform: uppercase; text-decoration: none;
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto;
+        }
+
+        .btn-organic:hover {
+            background: var(--accent-color); color: var(--bg-color);
+            border-color: var(--accent-color);
+            border-radius: 40% 60% 70% 30% / 40% 70% 30% 60%;
             transform: scale(1.05);
-            border-color: #00ffff;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
         }
 
-        .work-item video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* LOADING SCREEN */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a0a0a;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            transition: opacity 0.5s ease;
-        }
-
-        .loading-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
+        /* LOADER */
         .loader {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(0, 255, 255, 0.3);
-            border-top-color: #00ffff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color); z-index: 10000; display: flex;
+            flex-direction: column; justify-content: center; align-items: center;
+            font-family: var(--font-tech); transition: transform 0.8s cubic-bezier(0.87, 0, 0.13, 1);
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .loader.hidden { transform: translateY(-100%); }
+        .loader-bar { width: 200px; height: 2px; background: #333; position: relative; overflow: hidden; }
+        .loader-progress {
+            position: absolute; top: 0; left: 0; height: 100%;
+            background: var(--accent-color); width: 0%;
         }
 
-        .loading-text {
-            margin-top: 2rem;
-            font-size: 1rem;
-            color: #00ffff;
-            letter-spacing: 0.2em;
-        }
-
-        /* RESPONSIVE */
         @media (max-width: 768px) {
-            body {
-                cursor: auto;
+            .project-grid, .project-grid:nth-child(even) .project-visual, .project-grid:nth-child(even) .project-info {
+                display: flex; flex-direction: column; text-align: left;
             }
-
-            .cursor {
-                display: none;
-            }
-
-            .sound-toggle {
-                bottom: 2rem;
-                right: 2rem;
-                width: 50px;
-                height: 50px;
-            }
+            .cursor-dot, .cursor-outline { display: none; }
+            body { cursor: auto; }
+            .sound-toggle { bottom: 1rem; right: 1rem; width: 50px; height: 50px; }
         }
     </style>
 </head>
 <body>
-    <div class="loading-screen">
-        <div class="loader"></div>
-        <div class="loading-text">LOADING EXPERIENCE...</div>
+
+    <!-- PRELOADER -->
+    <div class="loader" id="loader">
+        <div style="font-size: 0.8rem; color: var(--accent-color); margin-bottom: 1rem;">INITIALIZING // LIVING_SYSTEM_V3</div>
+        <div class="loader-bar"><div class="loader-progress" id="progress"></div></div>
     </div>
 
-    <div class="cursor"></div>
+    <!-- AUDIO TOGGLE -->
+    <button class="sound-toggle hover-trigger" id="soundToggle" aria-label="Toggle Sound">
+        <div class="sound-bars">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+    </button>
 
-    <div class="grain-overlay"></div>
+    <!-- TEXTURE LAYERS -->
+    <div class="noise-overlay"></div>
+    <div class="vignette"></div>
 
+    <!-- CURSOR -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- 3D BACKGROUND (LIVING BLOB) -->
     <div id="canvas-container"></div>
 
-    <div class="content">
+    <!-- MAIN CONTENT -->
+    <div class="content-wrapper">
         <section class="hero">
-            <h1 class="glitch" data-text="ALEX">ALEX</h1>
-            <p class="subtitle">3D MOTION / GENERALIST</p>
-        </section>
-
-        <section class="scroll-section">
-            <div class="kinetic-text">
-                <span class="word">I</span>
-                <span class="word">CREATE</span>
-                <span class="word">WORLDS</span>
-                <span class="word">THAT</span>
-                <span class="word">MOVE</span>
-                <span class="word">-</span>
-                <span class="word">PROCEDURAL</span>
-                <span class="word">SIMULATIONS</span>
-                <span class="word">-</span>
-                <span class="word">FAUX-MORPHIC</span>
-                <span class="word">3D</span>
-                <span class="word">-</span>
-                <span class="word">KINETIC</span>
-                <span class="word">ENERGY</span>
+            <span class="scribble">system_online</span>
+            <div class="hero-meta">
+                <span>[ 51.5074° N, 0.1278° W ]</span>
+                <span>EST. 2026</span>
+            </div>
+            <h1>
+                <span>A</span><span>L</span><span>E</span><span>X</span><br>
+                <i style="font-family: var(--font-editorial); font-weight: 300; font-size: 0.5em; opacity: 0.8;">Digital Alchemist</i>
+            </h1>
+            <div class="hero-meta" style="margin-top: 3rem;">
+                <span>Procedural Systems</span><span>//</span><span>Motion Architecture</span>
             </div>
         </section>
 
-        <section class="lab-section" id="lab">
-            <h2 class="lab-title">INTERACTIVE LAB</h2>
-            <p class="lab-instructions">DRAG TO ROTATE • CLICK TO EXPLODE</p>
+        <section class="manifesto">
+            <p id="manifesto-text">
+                Reject the default. I build digital ecosystems that feel alive. Not rendered, but grown. A fusion of organic chaos and mathematical precision.
+            </p>
         </section>
 
         <section class="work-section">
-            <h2 class="lab-title">SELECTED WORK</h2>
-            <div class="work-grid">
-                <div class="work-item">
-                    <video muted loop playsinline>
+            <div class="section-header">
+                <span>SELECTED_WORKS_2024-2026</span><span>SCROLL_DOWN ↓</span>
+            </div>
+
+            <!-- Project 1 -->
+            <div class="project-grid hover-trigger">
+                <div class="project-visual">
+                    <video muted loop playsinline crossorigin="anonymous">
                         <source src="https://res.cloudinary.com/dbcisrglo/video/upload/v1771260723/work-1_ernuwd.mp4" type="video/mp4">
                     </video>
                 </div>
-                <div class="work-item">
-                    <video muted loop playsinline>
+                <div class="project-info">
+                    <span class="project-number">01 //</span>
+                    <h2 class="project-title">KINETIC<br>VOID</h2>
+                    <div style="font-size: 0.7rem; opacity: 0.7; text-transform: uppercase;">[ WEBGL / REACT / PHYSICS ]</div>
+                    <a href="#" class="btn-organic hover-trigger">Case Study</a>
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="project-grid hover-trigger" style="margin-top: 10vh;">
+                <div class="project-visual">
+                    <video muted loop playsinline crossorigin="anonymous">
                         <source src="https://res.cloudinary.com/dbcisrglo/video/upload/v1771260445/work-2_uqqkwc.mp4" type="video/mp4">
                     </video>
                 </div>
-                <div class="work-item">
-                    <video muted loop playsinline>
+                <div class="project-info">
+                    <span class="project-number">02 //</span>
+                    <h2 class="project-title">LIQUID<br>MEMORY</h2>
+                    <div style="font-size: 0.7rem; opacity: 0.7; text-transform: uppercase;">[ HOUDINI / THREE.JS / GLSL ]</div>
+                    <span class="scribble" style="position:relative; top: -20px; color: var(--text-color); font-size: 1rem;">featured in Wired -></span>
+                    <br><a href="#" class="btn-organic hover-trigger">Case Study</a>
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="project-grid hover-trigger" style="margin-top: 10vh;">
+                <div class="project-visual">
+                    <video muted loop playsinline crossorigin="anonymous">
                         <source src="https://res.cloudinary.com/dbcisrglo/video/upload/v1771260539/work-3_jscm5o.mp4" type="video/mp4">
                     </video>
                 </div>
+                <div class="project-info">
+                    <span class="project-number">03 //</span>
+                    <h2 class="project-title">NEURAL<br>ARTIFACT</h2>
+                    <div style="font-size: 0.7rem; opacity: 0.7; text-transform: uppercase;">[ GENERATIVE / AI / RAW DATA ]</div>
+                    <a href="#" class="btn-organic hover-trigger">Case Study</a>
+                </div>
             </div>
+        </section>
+
+        <section class="hero" style="height: 50vh;">
+            <p style="font-family: var(--font-tech); margin-bottom: 2rem;">READY TO BREAK THE GRID?</p>
+            <a href="mailto:alex@example.com" class="hover-trigger" style="font-family: var(--font-editorial); font-size: 3rem; color: var(--accent-color); text-decoration: none;">alex@future.com</a>
         </section>
     </div>
 
-    <button class="sound-toggle" id="soundToggle">
-        <svg class="sound-icon" viewBox="0 0 24 24">
-            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
-        </svg>
-    </button>
-
+    <!-- SCRIPTS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        // ==================== INITIALIZATION ====================
+        // ==================== 1. AUDIO ENGINE (PROCEDURAL) ====================
+        const AudioEngine = {
+            ctx: null,
+            droneOsc1: null,
+            droneOsc2: null,
+            masterGain: null,
+            isPlaying: false,
+
+            init: function() {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioContext();
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.connect(this.ctx.destination);
+                this.masterGain.gain.setValueAtTime(0, this.ctx.currentTime); // Start silent
+            },
+
+            toggle: function() {
+                if (!this.ctx) this.init();
+                
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+
+                if (this.isPlaying) {
+                    // Fade out
+                    this.masterGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 1);
+                    setTimeout(() => {
+                        if(this.droneOsc1) { this.droneOsc1.stop(); this.droneOsc2.stop(); }
+                        this.droneOsc1 = null; 
+                        this.droneOsc2 = null;
+                    }, 1000);
+                    this.isPlaying = false;
+                } else {
+                    // Start Drone (Binaural Beats)
+                    this.droneOsc1 = this.ctx.createOscillator();
+                    this.droneOsc2 = this.ctx.createOscillator();
+                    
+                    // 50Hz + 52Hz = 2Hz Binaural Beat (Deep atmosphere)
+                    this.droneOsc1.frequency.value = 50; 
+                    this.droneOsc2.frequency.value = 52; 
+
+                    const droneGain = this.ctx.createGain();
+                    droneGain.gain.value = 0.15; // Low volume background
+
+                    this.droneOsc1.connect(droneGain);
+                    this.droneOsc2.connect(droneGain);
+                    droneGain.connect(this.masterGain);
+
+                    this.droneOsc1.start();
+                    this.droneOsc2.start();
+
+                    // Fade in
+                    this.masterGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+                    this.masterGain.gain.exponentialRampToValueAtTime(1, this.ctx.currentTime + 2);
+                    this.isPlaying = true;
+                }
+            },
+
+            playHoverSound: function() {
+                if (!this.isPlaying || !this.ctx) return;
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                
+                // High pitch data chirp
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.1);
+                
+                gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            },
+            
+            playClickSound: function() {
+                 if (!this.isPlaying || !this.ctx) return;
+                 const osc = this.ctx.createOscillator();
+                 const gain = this.ctx.createGain();
+                 osc.connect(gain);
+                 gain.connect(this.masterGain);
+                 osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+                 osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.1);
+                 gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                 gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+                 osc.start();
+                 osc.stop(this.ctx.currentTime + 0.1);
+            }
+        };
+
+        // Sound Toggles
+        const soundBtn = document.getElementById('soundToggle');
+        soundBtn.addEventListener('click', () => {
+            AudioEngine.toggle();
+            soundBtn.classList.toggle('active');
+            if (AudioEngine.isPlaying) AudioEngine.playClickSound();
+        });
+
+        document.querySelectorAll('.hover-trigger').forEach(el => {
+            el.addEventListener('mouseenter', () => AudioEngine.playHoverSound());
+        });
+
+
+        // ==================== 2. LOADER & INIT ====================
         gsap.registerPlugin(ScrollTrigger);
 
-        let scene, camera, renderer, composer;
-        let blobMesh, vrHeadsetGroup, liquidMetalMesh;
-        let mouse = { x: 0, y: 0 };
-        let raycaster, controls;
-        let isExploded = false;
-        let vrParts = [];
-        let assetsLoaded = 0;
-        let totalAssets = 3; 
+        const loader = {
+            el: document.getElementById('loader'),
+            bar: document.getElementById('progress'),
+            init: function() {
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 10;
+                    if(progress >= 100) {
+                        progress = 100;
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            this.el.classList.add('hidden');
+                            document.getElementById('canvas-container').style.opacity = 1;
+                            initThree();
+                        }, 500);
+                    }
+                    this.bar.style.width = progress + '%';
+                }, 100);
+            }
+        };
 
-        // Audio
-        let audioContext, audioBuffer, soundSource;
-        let isSoundPlaying = false;
+        window.addEventListener('load', () => loader.init());
 
-        // ==================== CUSTOM CURSOR ====================
-        const cursor = document.querySelector('.cursor');
-        const interactiveElements = document.querySelectorAll('a, button, .work-item');
-
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
+        // ==================== 3. CURSOR PHYSICS ====================
+        const cursor = {
+            dot: document.querySelector('.cursor-dot'),
+            outline: document.querySelector('.cursor-outline'),
+            x: window.innerWidth / 2, y: window.innerHeight / 2,
+            targetX: window.innerWidth / 2, targetY: window.innerHeight / 2,
             
-            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-        });
+            init: function() {
+                document.addEventListener('mousemove', e => {
+                    this.targetX = e.clientX; this.targetY = e.clientY;
+                    this.dot.style.left = e.clientX + 'px';
+                    this.dot.style.top = e.clientY + 'px';
+                });
 
-        interactiveElements.forEach(el => {
-            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
-            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
-        });
+                const animateCursor = () => {
+                    const dt = 0.15;
+                    this.x += (this.targetX - this.x) * dt;
+                    this.y += (this.targetY - this.y) * dt;
+                    this.outline.style.left = this.x + 'px';
+                    this.outline.style.top = this.y + 'px';
+                    requestAnimationFrame(animateCursor);
+                };
+                animateCursor();
 
-        // ==================== THREE.JS SETUP ====================
+                document.querySelectorAll('a, button, .hover-trigger').forEach(el => {
+                    el.addEventListener('mouseenter', () => this.outline.classList.add('hover'));
+                    el.addEventListener('mouseleave', () => this.outline.classList.remove('hover'));
+                });
+            }
+        };
+        cursor.init();
+
+        // ==================== 4. THREE.JS LIVING BLOB ====================
+        let scene, camera, renderer, sphere;
+        let mouseX = 0, mouseY = 0;
+
         function initThree() {
+            const container = document.getElementById('canvas-container');
+            
             scene = new THREE.Scene();
-            scene.fog = new THREE.Fog(0x0a0a0a, 10, 50);
+            scene.fog = new THREE.FogExp2(0x050505, 0.05);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 5;
 
-            renderer = new THREE.WebGLRenderer({ 
-                antialias: true, 
-                alpha: true,
-                powerPreference: "high-performance"
-            });
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.2;
-            
-            // Allow textures to load properly
             renderer.outputEncoding = THREE.sRGBEncoding;
-            
-            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            container.appendChild(renderer.domElement);
 
-            raycaster = new THREE.Raycaster();
-
-            // Lights - Increased intensity for better texture visibility
-            const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
             scene.add(ambientLight);
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-            directionalLight.position.set(0, 10, 5);
-            scene.add(directionalLight);
+            const dirLight = new THREE.DirectionalLight(0xccff00, 2);
+            dirLight.position.set(5, 5, 5);
+            scene.add(dirLight);
+            
+            const blueLight = new THREE.PointLight(0x00ffff, 3);
+            blueLight.position.set(-5, -5, 2);
+            scene.add(blueLight);
 
-            const pointLight = new THREE.PointLight(0x00ffff, 1);
-            pointLight.position.set(5, 5, 5);
-            scene.add(pointLight);
-
-            // Add 3D elements
-            createIridescentBlob();
-            createVRHeadset();
-            createLiquidMetal();
-
-            // Video hover effects
-            setupVideoInteractions();
-        }
-
-        // ==================== ASSET LOADING TRACKER ====================
-        function assetLoaded() {
-            assetsLoaded++;
-            if (assetsLoaded >= totalAssets) {
-                setTimeout(() => {
-                    document.querySelector('.loading-screen').classList.add('hidden');
-                }, 500);
-            }
-        }
-
-        // ==================== BLOB ====================
-        function createIridescentBlob() {
-            const loader = new THREE.GLTFLoader();
-            loader.load(
-                'assets/blob-model.glb',
-                (gltf) => {
-                    blobMesh = gltf.scene;
-                    blobMesh.position.set(0, 0, 0);
-                    blobMesh.scale.set(2, 2, 2);
-                    scene.add(blobMesh);
-
-                    gsap.to(blobMesh.rotation, {
-                        y: Math.PI * 2, duration: 20, ease: "none", repeat: -1
-                    });
-
-                    ScrollTrigger.create({
-                        trigger: ".hero",
-                        start: "top top", end: "bottom top", scrub: 1,
-                        onUpdate: (self) => {
-                            if (blobMesh) blobMesh.scale.set(2 + self.progress, 2 + self.progress, 2 + self.progress);
-                        }
-                    });
-                    assetLoaded();
-                },
-                undefined,
-                (error) => { console.log('Error loading blob'); assetLoaded(); }
-            );
-        }
-
-        // ==================== VR HEADSET ====================
-        function createVRHeadset() {
-            const loader = new THREE.GLTFLoader();
-            loader.load(
-                'assets/vr-headset.glb',
-                (gltf) => {
-                    vrHeadsetGroup = gltf.scene;
-                    vrHeadsetGroup.position.set(-3, -2, 0);
-                    vrHeadsetGroup.scale.set(0, 0, 0);
-                    
-                    vrParts = [];
-                    vrHeadsetGroup.traverse((child) => {
-                        if (child.isMesh) {
-                            vrParts.push({
-                                mesh: child,
-                                originalPos: child.position.clone(),
-                                originalRot: child.rotation.clone()
-                            });
-                        }
-                    });
-                    
-                    scene.add(vrHeadsetGroup);
-
-                    ScrollTrigger.create({
-                        trigger: ".lab-section",
-                        start: "top center",
-                        onEnter: () => {
-                            gsap.to(vrHeadsetGroup.scale, { x: 1, y: 1, z: 1, duration: 1, ease: "elastic.out(1, 0.5)" });
-                        }
-                    });
-                    assetLoaded();
-                },
-                undefined,
-                (error) => { console.log('Error loading headset'); assetLoaded(); }
-            );
-            renderer.domElement.addEventListener('click', onVRHeadsetClick);
-        }
-
-        function onVRHeadsetClick(event) {
-            if (!vrHeadsetGroup) return;
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(vrHeadsetGroup.children, true);
-            if (intersects.length > 0 && vrHeadsetGroup.scale.x > 0) {
-                !isExploded ? explodeVRHeadset() : implodeVRHeadset();
-            }
-        }
-
-        function explodeVRHeadset() {
-            isExploded = true;
-            vrParts.forEach((part) => {
-                const worldPos = new THREE.Vector3();
-                part.mesh.getWorldPosition(worldPos);
-                const groupWorldPos = new THREE.Vector3();
-                vrHeadsetGroup.getWorldPosition(groupWorldPos);
-                const direction = new THREE.Vector3().subVectors(worldPos, groupWorldPos).normalize();
-                
-                gsap.to(part.mesh.position, {
-                    x: part.mesh.position.x + direction.x * 3,
-                    y: part.mesh.position.y + direction.y * 3,
-                    z: part.mesh.position.z + direction.z * 3,
-                    duration: 0.8, ease: "power2.out"
-                });
-                gsap.to(part.mesh.rotation, {
-                    x: part.mesh.rotation.x + Math.random(),
-                    y: part.mesh.rotation.y + Math.random(),
-                    duration: 0.8
-                });
+            // PROCEDURAL BLOB GEOMETRY
+            const geometry = new THREE.IcosahedronGeometry(1.8, 128); // High detail
+            
+            const material = new THREE.MeshPhysicalMaterial({
+                color: 0x111111,
+                roughness: 0.2,
+                metalness: 1.0,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.1,
+                side: THREE.DoubleSide
             });
-        }
 
-        function implodeVRHeadset() {
-            isExploded = false;
-            vrParts.forEach((part) => {
-                gsap.to(part.mesh.position, { ...part.originalPos, duration: 0.8, ease: "back.out(1.7)" });
-                gsap.to(part.mesh.rotation, { ...part.originalRot, duration: 0.8 });
+            sphere = new THREE.Mesh(geometry, material);
+            scene.add(sphere);
+
+            // Store original positions for noise calculation
+            sphere.geometry.userData = { originalPositions: sphere.geometry.attributes.position.clone() };
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX - window.innerWidth / 2) / 100;
+                mouseY = (e.clientY - window.innerHeight / 2) / 100;
             });
+            window.addEventListener('resize', onWindowResize);
+            animateThree();
         }
 
-        // ==================== LIQUID METAL ====================
-        function createLiquidMetal() {
-            const loader = new THREE.GLTFLoader();
-            loader.load(
-                'assets/liquid-metal.glb',
-                (gltf) => {
-                    liquidMetalMesh = gltf.scene;
-                    liquidMetalMesh.position.set(3, 1, -2);
-                    liquidMetalMesh.scale.set(1, 1, 1);
-                    scene.add(liquidMetalMesh);
-
-                    gsap.to(liquidMetalMesh.rotation, {
-                        x: Math.PI * 2, y: Math.PI * 2, duration: 10, ease: "none", repeat: -1
-                    });
-                    assetLoaded();
-                },
-                undefined,
-                (error) => { console.log('Error loading metal'); assetLoaded(); }
-            );
-        }
-
-        // ==================== INTERACTIONS & SOUND ====================
-        function setupVideoInteractions() {
-            document.querySelectorAll('.work-item').forEach(item => {
-                const video = item.querySelector('video');
-                item.addEventListener('mouseenter', () => {
-                    if (video) video.play();
-                    if (isSoundPlaying) playHoverSound();
-                });
-                item.addEventListener('mouseleave', () => {
-                    if (video) { video.pause(); video.currentTime = 0; }
-                });
-            });
-        }
-
-        function setupKineticText() {
-            const words = document.querySelectorAll('.kinetic-text .word');
-            words.forEach((word, i) => {
-                ScrollTrigger.create({
-                    trigger: '.scroll-section', start: "top center", end: "bottom center", scrub: 1,
-                    onUpdate: (self) => {
-                        const progress = self.progress;
-                        const wordProgress = (progress - (i / words.length)) * words.length;
-                        if (wordProgress > 0 && wordProgress < 1) {
-                            word.classList.add('active');
-                            gsap.to(word, { scale: 1.3, rotation: Math.sin(wordProgress * Math.PI * 2) * 15, duration: 0.1 });
-                        } else {
-                            word.classList.remove('active');
-                        }
-                    }
-                });
-            });
-        }
-
-        function initAudio() { audioContext = new (window.AudioContext || window.webkitAudioContext)(); }
-        
-        function playHoverSound() {
-            if (!audioContext) return;
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            osc.connect(gain); gain.connect(audioContext.destination);
-            osc.frequency.value = 800;
-            gain.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-            osc.start(audioContext.currentTime); osc.stop(audioContext.currentTime + 0.1);
-        }
-
-        document.getElementById('soundToggle').addEventListener('click', function() {
-            if (!audioContext) initAudio();
-            isSoundPlaying = !isSoundPlaying;
-            this.classList.toggle('active', isSoundPlaying);
-            if (isSoundPlaying && !soundSource) playBackgroundMusic();
-            else if (!isSoundPlaying && soundSource) { soundSource.stop(); soundSource = null; }
-        });
-
-        function playBackgroundMusic() {
-            if (!audioContext) return;
-            soundSource = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            soundSource.connect(gain); gain.connect(audioContext.destination);
-            soundSource.frequency.value = 110; gain.gain.value = 0.05;
-            soundSource.start();
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            if (blobMesh) {
-                blobMesh.position.x = gsap.utils.interpolate(blobMesh.position.x, mouse.x * 2, 0.05);
-                blobMesh.position.y = gsap.utils.interpolate(blobMesh.position.y, -mouse.y * 2, 0.05);
-            }
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
+        function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animateThree() {
+            requestAnimationFrame(animateThree);
+            const time = performance.now() * 0.001;
+
+            if (sphere) {
+                // Rotation
+                sphere.rotation.y += 0.002;
+                sphere.rotation.z += 0.001;
+                
+                // Mouse Parallax
+                sphere.position.x += (mouseX * 0.5 - sphere.position.x) * 0.05;
+                sphere.position.y += (-mouseY * 0.5 - sphere.position.y) * 0.05;
+
+                // Vertex Noise Simulation (Liquid Effect)
+                const positions = sphere.geometry.attributes.position;
+                const originalPositions = sphere.geometry.userData.originalPositions;
+                
+                for (let i = 0; i < positions.count; i++) {
+                    const x = originalPositions.getX(i);
+                    const y = originalPositions.getY(i);
+                    const z = originalPositions.getZ(i);
+                    
+                    // Simple noise approximation using sine waves
+                    const noise = Math.sin(x * 2 + time) * Math.cos(y * 1.5 + time) * Math.sin(z * 2 + time);
+                    const scale = 1 + noise * 0.2; // Magnitude of liquid blob
+                    
+                    positions.setXYZ(i, x * scale, y * scale, z * scale);
+                }
+                positions.needsUpdate = true;
+                sphere.geometry.computeVertexNormals(); // Re-calculate lighting
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // ==================== 5. SCROLL ANIMATION ====================
+        const manifesto = document.getElementById('manifesto-text');
+        manifesto.innerHTML = manifesto.innerText.split(' ').map(word => `<span class="word">${word}</span>`).join(' ');
+        
+        gsap.to('.word', {
+            scrollTrigger: {
+                trigger: ".manifesto", start: "top 70%", end: "bottom 30%", scrub: 1
+            },
+            opacity: 1, filter: "blur(0px)", y: 0, stagger: 0.1, color: "#E0E0E0"
         });
 
-        window.addEventListener('load', () => {
-            initThree();
-            setupKineticText();
-            animate();
+        // Video Interactions
+        document.querySelectorAll('.project-visual').forEach(visual => {
+            const video = visual.querySelector('video');
+            if(video) {
+                visual.addEventListener('mouseenter', () => video.play());
+                visual.addEventListener('mouseleave', () => { video.pause(); video.currentTime = 0; });
+            }
         });
-        
-        // Mobile Optimization
-        if (/Android|iPhone/i.test(navigator.userAgent)) {
-            renderer.setPixelRatio(1);
-        }
+
     </script>
 </body>
 </html>
