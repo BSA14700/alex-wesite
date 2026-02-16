@@ -356,30 +356,23 @@
     </style>
 </head>
 <body>
-    <!-- LOADING SCREEN -->
     <div class="loading-screen">
         <div class="loader"></div>
         <div class="loading-text">LOADING EXPERIENCE...</div>
     </div>
 
-    <!-- CUSTOM CURSOR -->
     <div class="cursor"></div>
 
-    <!-- FILM GRAIN OVERLAY -->
     <div class="grain-overlay"></div>
 
-    <!-- THREE.JS CANVAS -->
     <div id="canvas-container"></div>
 
-    <!-- CONTENT -->
     <div class="content">
-        <!-- HERO SECTION -->
         <section class="hero">
             <h1 class="glitch" data-text="ALEX">ALEX</h1>
             <p class="subtitle">3D MOTION / GENERALIST</p>
         </section>
 
-        <!-- SCROLLYTELLING SECTION -->
         <section class="scroll-section">
             <div class="kinetic-text">
                 <span class="word">I</span>
@@ -399,50 +392,43 @@
             </div>
         </section>
 
-        <!-- INTERACTIVE LAB SECTION -->
         <section class="lab-section" id="lab">
             <h2 class="lab-title">INTERACTIVE LAB</h2>
             <p class="lab-instructions">DRAG TO ROTATE • CLICK TO EXPLODE</p>
         </section>
 
-        <!-- WORK SECTION -->
         <section class="work-section">
             <h2 class="lab-title">SELECTED WORK</h2>
             <div class="work-grid">
                 <div class="work-item">
-                    <video muted loop playsinline>
-                        <source src="assets/work-1.mp4" type="video/mp4">
+                    <video muted loop playsinline crossorigin="anonymous">
+                        <source src="https://github.com/BSA14700/alex-wesite/releases/download/assets/work-1.mp4" type="video/mp4">
                     </video>
                 </div>
                 <div class="work-item">
-                    <video muted loop playsinline>
-                        <source src="assets/work-2.mp4" type="video/mp4">
+                    <video muted loop playsinline crossorigin="anonymous">
+                        <source src="https://github.com/BSA14700/alex-wesite/releases/download/assets/work-2.mp4" type="video/mp4">
                     </video>
                 </div>
                 <div class="work-item">
-                    <video muted loop playsinline>
-                        <source src="assets/work-3.mp4" type="video/mp4">
+                    <video muted loop playsinline crossorigin="anonymous">
+                        <source src="https://github.com/BSA14700/alex-wesite/releases/download/assets/work-3.mp4" type="video/mp4">
                     </video>
                 </div>
             </div>
         </section>
     </div>
 
-    <!-- SOUND TOGGLE -->
     <button class="sound-toggle" id="soundToggle">
         <svg class="sound-icon" viewBox="0 0 24 24">
             <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
         </svg>
     </button>
 
-    <!-- THREE.JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <!-- GLTF LOADER -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <!-- ORBIT CONTROLS -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
@@ -541,7 +527,7 @@
             const loader = new THREE.GLTFLoader();
             
             loader.load(
-                'assets/blob-model.glb',
+                'https://github.com/BSA14700/alex-wesite/releases/download/assets/blob-model.glb',
                 // Success callback
                 (gltf) => {
                     blobMesh = gltf.scene;
@@ -653,7 +639,7 @@
             const loader = new THREE.GLTFLoader();
             
             loader.load(
-                'assets/vr-headset.glb',
+                'https://github.com/BSA14700/alex-wesite/releases/download/assets/vr-headset.glb',
                 // Success callback
                 (gltf) => {
                     vrHeadsetGroup = gltf.scene;
@@ -852,7 +838,7 @@
             const loader = new THREE.GLTFLoader();
             
             loader.load(
-                'assets/liquid-metal.glb',
+                'https://github.com/BSA14700/alex-wesite/releases/download/assets/liquid-metal.glb',
                 // Success callback
                 (gltf) => {
                     liquidMetalMesh = gltf.scene;
@@ -928,10 +914,11 @@
         // ==================== VIDEO PLANE (SHOWREEL) ====================
         function createVideoPlane() {
             const video = document.createElement('video');
-            video.src = 'assets/showreel-4k.mp4';
+            video.src = 'https://github.com/BSA14700/alex-wesite/releases/download/assets/showreel-4k.mp4';
             video.loop = true;
             video.muted = true;
             video.playsInline = true;
+            video.crossOrigin = "anonymous"; // Added for CORS
             video.play().catch(err => console.log('Video autoplay prevented:', err));
 
             const videoTexture = new THREE.VideoTexture(video);
