@@ -431,7 +431,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-    <script>
+<script>
         // ==================== INITIALIZATION ====================
         gsap.registerPlugin(ScrollTrigger);
 
@@ -442,7 +442,7 @@
         let isExploded = false;
         let vrParts = [];
         let assetsLoaded = 0;
-        let totalAssets = 3; // blob, vr headset, liquid metal
+        let totalAssets = 3; 
 
         // Audio
         let audioContext, audioBuffer, soundSource;
@@ -482,25 +482,25 @@
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = 1.2;
+            
+            // Allow textures to load properly
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
             raycaster = new THREE.Raycaster();
 
-            // Lights
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            // Lights - Increased intensity for better texture visibility
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
             scene.add(ambientLight);
 
-            const pointLight1 = new THREE.PointLight(0x00ffff, 2, 100);
-            pointLight1.position.set(5, 5, 5);
-            scene.add(pointLight1);
-
-            const pointLight2 = new THREE.PointLight(0xff00ff, 2, 100);
-            pointLight2.position.set(-5, -5, 5);
-            scene.add(pointLight2);
-
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
             directionalLight.position.set(0, 10, 5);
             scene.add(directionalLight);
+
+            const pointLight = new THREE.PointLight(0x00ffff, 1);
+            pointLight.position.set(5, 5, 5);
+            scene.add(pointLight);
 
             // Add 3D elements
             createIridescentBlob();
@@ -522,144 +522,50 @@
             }
         }
 
-        // ==================== IRIDESCENT BLOB (GLB VERSION) ====================
+        // ==================== BLOB (TEXTURE FIXED) ====================
         function createIridescentBlob() {
             const loader = new THREE.GLTFLoader();
-            
             loader.load(
                 'assets/blob-model.glb',
-                // Success callback
                 (gltf) => {
                     blobMesh = gltf.scene;
                     blobMesh.position.set(0, 0, 0);
                     blobMesh.scale.set(2, 2, 2);
-                    
-                    // Apply iridescent material to all meshes in the model
-                    blobMesh.traverse((child) => {
-                        if (child.isMesh) {
-                            child.material = new THREE.MeshPhysicalMaterial({
-                                metalness: 1,
-                                roughness: 0.1,
-                                clearcoat: 1,
-                                clearcoatRoughness: 0.1,
-                                color: 0xffffff,
-                                envMapIntensity: 1,
-                            });
-                        }
-                    });
-                    
+                    // REMOVED MATERIAL OVERRIDE HERE
                     scene.add(blobMesh);
 
-                    // Animate with GSAP
                     gsap.to(blobMesh.rotation, {
-                        y: Math.PI * 2,
-                        duration: 20,
-                        ease: "none",
-                        repeat: -1
+                        y: Math.PI * 2, duration: 20, ease: "none", repeat: -1
                     });
 
-                    // Scroll-based morph
                     ScrollTrigger.create({
                         trigger: ".hero",
-                        start: "top top",
-                        end: "bottom top",
-                        scrub: 1,
+                        start: "top top", end: "bottom top", scrub: 1,
                         onUpdate: (self) => {
-                            if (blobMesh) {
-                                blobMesh.scale.set(
-                                    2 + self.progress * 1,
-                                    2 + self.progress * 1,
-                                    2 + self.progress * 1
-                                );
-                            }
+                            if (blobMesh) blobMesh.scale.set(2 + self.progress, 2 + self.progress, 2 + self.progress);
                         }
                     });
-
-                    console.log('✓ Blob model loaded successfully');
                     assetLoaded();
                 },
-                // Progress callback
-                (xhr) => {
-                    console.log('Blob: ' + (xhr.loaded / xhr.total * 100).toFixed(1) + '% loaded');
-                },
-                // Error callback
-                (error) => {
-                    console.error('Error loading blob model:', error);
-                    console.log('Loading fallback blob geometry...');
-                    createFallbackBlob();
-                    assetLoaded();
-                }
+                undefined,
+                (error) => { console.log('Error loading blob'); assetLoaded(); }
             );
         }
 
-        // Fallback function if GLB fails to load
-        function createFallbackBlob() {
-            const geometry = new THREE.IcosahedronGeometry(2, 4);
-            const material = new THREE.MeshPhysicalMaterial({
-                metalness: 1,
-                roughness: 0.1,
-                clearcoat: 1,
-                clearcoatRoughness: 0.1,
-                color: 0xffffff,
-                envMapIntensity: 1,
-            });
-
-            blobMesh = new THREE.Mesh(geometry, material);
-            blobMesh.position.set(0, 0, 0);
-            scene.add(blobMesh);
-
-            // Animate with GSAP
-            gsap.to(blobMesh.rotation, {
-                y: Math.PI * 2,
-                duration: 20,
-                ease: "none",
-                repeat: -1
-            });
-
-            // Scroll-based morph
-            ScrollTrigger.create({
-                trigger: ".hero",
-                start: "top top",
-                end: "bottom top",
-                scrub: 1,
-                onUpdate: (self) => {
-                    blobMesh.scale.set(
-                        1 + self.progress * 0.5,
-                        1 + self.progress * 0.5,
-                        1 + self.progress * 0.5
-                    );
-                }
-            });
-
-            console.log('✓ Fallback blob created');
-        }
-
-        // ==================== VR HEADSET (GLB VERSION) ====================
+        // ==================== VR HEADSET (TEXTURE FIXED) ====================
         function createVRHeadset() {
             const loader = new THREE.GLTFLoader();
-            
             loader.load(
                 'assets/vr-headset.glb',
-                // Success callback
                 (gltf) => {
                     vrHeadsetGroup = gltf.scene;
                     vrHeadsetGroup.position.set(-3, -2, 0);
                     vrHeadsetGroup.scale.set(0, 0, 0);
                     
-                    // Store all child meshes for explosion effect
                     vrParts = [];
                     vrHeadsetGroup.traverse((child) => {
                         if (child.isMesh) {
-                            // Apply cyberpunk materials
-                            const originalColor = child.material.color ? child.material.color.getHex() : 0x333333;
-                            child.material = new THREE.MeshStandardMaterial({
-                                color: originalColor,
-                                metalness: 0.8,
-                                roughness: 0.2,
-                                emissive: 0x00ffff,
-                                emissiveIntensity: 0.1
-                            });
-                            
+                            // REMOVED MATERIAL OVERRIDE HERE - Uses original textures now
                             vrParts.push({
                                 mesh: child,
                                 originalPos: child.position.clone(),
@@ -670,145 +576,48 @@
                     
                     scene.add(vrHeadsetGroup);
 
-                    // Animate in when scrolling to lab section
                     ScrollTrigger.create({
                         trigger: ".lab-section",
                         start: "top center",
                         onEnter: () => {
-                            gsap.to(vrHeadsetGroup.scale, {
-                                x: 1, y: 1, z: 1,
-                                duration: 1,
-                                ease: "elastic.out(1, 0.5)"
-                            });
+                            gsap.to(vrHeadsetGroup.scale, { x: 1, y: 1, z: 1, duration: 1, ease: "elastic.out(1, 0.5)" });
                         }
                     });
-
-                    console.log('✓ VR Headset loaded successfully');
-                    console.log('  Parts found:', vrParts.length);
                     assetLoaded();
                 },
-                // Progress callback
-                (xhr) => {
-                    console.log('VR Headset: ' + (xhr.loaded / xhr.total * 100).toFixed(1) + '% loaded');
-                },
-                // Error callback
-                (error) => {
-                    console.error('Error loading VR headset:', error);
-                    console.log('Loading fallback VR headset geometry...');
-                    createFallbackVRHeadset();
-                    assetLoaded();
-                }
+                undefined,
+                (error) => { console.log('Error loading headset'); assetLoaded(); }
             );
-
-            // Click to explode/implode
             renderer.domElement.addEventListener('click', onVRHeadsetClick);
-        }
-
-        // Fallback VR Headset
-        function createFallbackVRHeadset() {
-            vrHeadsetGroup = new THREE.Group();
-            
-            // Main body
-            const bodyGeometry = new THREE.BoxGeometry(1.5, 0.8, 1);
-            const bodyMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x333333,
-                metalness: 0.8,
-                roughness: 0.2
-            });
-            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-            vrHeadsetGroup.add(body);
-            vrParts.push({ mesh: body, originalPos: body.position.clone(), originalRot: body.rotation.clone() });
-
-            // Left lens
-            const lensGeometry = new THREE.CylinderGeometry(0.25, 0.25, 0.1, 32);
-            const lensMaterial = new THREE.MeshPhysicalMaterial({ 
-                color: 0x00ffff,
-                metalness: 0.9,
-                roughness: 0.1,
-                transparent: true,
-                opacity: 0.7
-            });
-            const leftLens = new THREE.Mesh(lensGeometry, lensMaterial);
-            leftLens.rotation.x = Math.PI / 2;
-            leftLens.position.set(-0.35, 0, 0.5);
-            vrHeadsetGroup.add(leftLens);
-            vrParts.push({ mesh: leftLens, originalPos: leftLens.position.clone(), originalRot: leftLens.rotation.clone() });
-
-            // Right lens
-            const rightLens = leftLens.clone();
-            rightLens.position.set(0.35, 0, 0.5);
-            vrHeadsetGroup.add(rightLens);
-            vrParts.push({ mesh: rightLens, originalPos: rightLens.position.clone(), originalRot: rightLens.rotation.clone() });
-
-            // Strap
-            const strapGeometry = new THREE.TorusGeometry(0.5, 0.05, 16, 100, Math.PI);
-            const strapMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
-            const strap = new THREE.Mesh(strapGeometry, strapMaterial);
-            strap.position.set(0, 0, -0.5);
-            strap.rotation.x = Math.PI / 2;
-            vrHeadsetGroup.add(strap);
-            vrParts.push({ mesh: strap, originalPos: strap.position.clone(), originalRot: strap.rotation.clone() });
-
-            vrHeadsetGroup.position.set(-3, -2, 0);
-            vrHeadsetGroup.scale.set(0, 0, 0);
-            scene.add(vrHeadsetGroup);
-
-            // Animate in when scrolling to lab section
-            ScrollTrigger.create({
-                trigger: ".lab-section",
-                start: "top center",
-                onEnter: () => {
-                    gsap.to(vrHeadsetGroup.scale, {
-                        x: 1, y: 1, z: 1,
-                        duration: 1,
-                        ease: "elastic.out(1, 0.5)"
-                    });
-                }
-            });
-
-            console.log('✓ Fallback VR Headset created');
         }
 
         function onVRHeadsetClick(event) {
             if (!vrHeadsetGroup) return;
-            
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(vrHeadsetGroup.children, true);
-
             if (intersects.length > 0 && vrHeadsetGroup.scale.x > 0) {
-                if (!isExploded) {
-                    explodeVRHeadset();
-                } else {
-                    implodeVRHeadset();
-                }
+                !isExploded ? explodeVRHeadset() : implodeVRHeadset();
             }
         }
 
         function explodeVRHeadset() {
             isExploded = true;
-            vrParts.forEach((part, i) => {
-                // Get the world position of the part
+            vrParts.forEach((part) => {
                 const worldPos = new THREE.Vector3();
                 part.mesh.getWorldPosition(worldPos);
-                
-                // Calculate explosion direction from group center
                 const groupWorldPos = new THREE.Vector3();
                 vrHeadsetGroup.getWorldPosition(groupWorldPos);
-                
-                const direction = new THREE.Vector3();
-                direction.subVectors(worldPos, groupWorldPos).normalize();
+                const direction = new THREE.Vector3().subVectors(worldPos, groupWorldPos).normalize();
                 
                 gsap.to(part.mesh.position, {
                     x: part.mesh.position.x + direction.x * 3,
                     y: part.mesh.position.y + direction.y * 3,
                     z: part.mesh.position.z + direction.z * 3,
-                    duration: 0.8,
-                    ease: "power2.out"
+                    duration: 0.8, ease: "power2.out"
                 });
                 gsap.to(part.mesh.rotation, {
-                    x: part.mesh.rotation.x + Math.random() * Math.PI * 2,
-                    y: part.mesh.rotation.y + Math.random() * Math.PI * 2,
-                    z: part.mesh.rotation.z + Math.random() * Math.PI * 2,
+                    x: part.mesh.rotation.x + Math.random(),
+                    y: part.mesh.rotation.y + Math.random(),
                     duration: 0.8
                 });
             });
@@ -817,185 +626,92 @@
         function implodeVRHeadset() {
             isExploded = false;
             vrParts.forEach((part) => {
-                gsap.to(part.mesh.position, {
-                    x: part.originalPos.x,
-                    y: part.originalPos.y,
-                    z: part.originalPos.z,
-                    duration: 0.8,
-                    ease: "back.out(1.7)"
-                });
-                gsap.to(part.mesh.rotation, {
-                    x: part.originalRot.x,
-                    y: part.originalRot.y,
-                    z: part.originalRot.z,
-                    duration: 0.8
-                });
+                gsap.to(part.mesh.position, { ...part.originalPos, duration: 0.8, ease: "back.out(1.7)" });
+                gsap.to(part.mesh.rotation, { ...part.originalRot, duration: 0.8 });
             });
         }
 
-        // ==================== LIQUID METAL LOOP (GLB VERSION) ====================
+        // ==================== LIQUID METAL (TEXTURE FIXED) ====================
         function createLiquidMetal() {
             const loader = new THREE.GLTFLoader();
-            
             loader.load(
                 'assets/liquid-metal.glb',
-                // Success callback
                 (gltf) => {
                     liquidMetalMesh = gltf.scene;
                     liquidMetalMesh.position.set(3, 1, -2);
                     liquidMetalMesh.scale.set(1, 1, 1);
-                    
-                    // Apply liquid metal material
-                    liquidMetalMesh.traverse((child) => {
-                        if (child.isMesh) {
-                            child.material = new THREE.MeshStandardMaterial({
-                                color: 0xc0c0c0,
-                                metalness: 1,
-                                roughness: 0.1,
-                                envMapIntensity: 1.5
-                            });
-                        }
-                    });
-                    
+                    // REMOVED MATERIAL OVERRIDE
                     scene.add(liquidMetalMesh);
 
-                    // Continuous rotation
                     gsap.to(liquidMetalMesh.rotation, {
-                        x: Math.PI * 2,
-                        y: Math.PI * 2,
-                        duration: 10,
-                        ease: "none",
-                        repeat: -1
+                        x: Math.PI * 2, y: Math.PI * 2, duration: 10, ease: "none", repeat: -1
                     });
-
-                    console.log('✓ Liquid Metal loaded successfully');
                     assetLoaded();
                 },
-                // Progress callback
-                (xhr) => {
-                    console.log('Liquid Metal: ' + (xhr.loaded / xhr.total * 100).toFixed(1) + '% loaded');
-                },
-                // Error callback
-                (error) => {
-                    console.error('Error loading liquid metal:', error);
-                    console.log('Loading fallback liquid metal geometry...');
-                    createFallbackLiquidMetal();
-                    assetLoaded();
-                }
+                undefined,
+                (error) => { console.log('Error loading metal'); assetLoaded(); }
             );
         }
 
-        // Fallback Liquid Metal
-        function createFallbackLiquidMetal() {
-            const geometry = new THREE.TorusGeometry(0.8, 0.3, 16, 100);
-            const material = new THREE.MeshStandardMaterial({
-                color: 0xc0c0c0,
-                metalness: 1,
-                roughness: 0.1,
-                envMapIntensity: 1
-            });
-
-            liquidMetalMesh = new THREE.Mesh(geometry, material);
-            liquidMetalMesh.position.set(3, 1, -2);
-            scene.add(liquidMetalMesh);
-
-            // Continuous rotation
-            gsap.to(liquidMetalMesh.rotation, {
-                x: Math.PI * 2,
-                y: Math.PI * 2,
-                duration: 10,
-                ease: "none",
-                repeat: -1
-            });
-
-            console.log('✓ Fallback Liquid Metal created');
-        }
-
-        // ==================== VIDEO PLANE (SHOWREEL) ====================
+        // ==================== VIDEO PLANE (SIZE FIXED) ====================
         function createVideoPlane() {
             const video = document.createElement('video');
             video.src = 'https://res.cloudinary.com/dbcisrglo/video/upload/v1771260542/showreel-4k_qjfpu1.mp4';
             video.loop = true;
             video.muted = true;
             video.playsInline = true;
-            video.crossOrigin = "anonymous"; // Keep this for Cloudinary CORS
+            video.crossOrigin = "anonymous";
             video.play().catch(err => console.log('Video autoplay prevented:', err));
 
             const videoTexture = new THREE.VideoTexture(video);
             videoTexture.minFilter = THREE.LinearFilter;
             videoTexture.magFilter = THREE.LinearFilter;
 
+            // Geometry is 16x9
             const geometry = new THREE.PlaneGeometry(16, 9);
-            const material = new THREE.MeshBasicMaterial({ 
-                map: videoTexture,
-                side: THREE.DoubleSide 
-            });
+            const material = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.DoubleSide });
 
             videoMesh = new THREE.Mesh(geometry, material);
-            videoMesh.position.set(0, 0, -10);
-            videoMesh.scale.set(0.3, 0.3, 0.3);
+            videoMesh.position.set(0, 0, -12); // Pushed it back slightly more
+            
+            // --- FIX: INCREASED SCALE FROM 0.3 TO 2.5 ---
+            videoMesh.scale.set(2.5, 2.5, 2.5); 
+            
             scene.add(videoMesh);
 
-            // Parallax effect
             ScrollTrigger.create({
-                trigger: "body",
-                start: "top top",
-                end: "bottom bottom",
-                scrub: 1,
+                trigger: "body", start: "top top", end: "bottom bottom", scrub: 1,
                 onUpdate: (self) => {
-                    if (videoMesh) {
-                        videoMesh.position.y = self.progress * 5 - 2;
-                    }
+                    if (videoMesh) videoMesh.position.y = self.progress * 8 - 4; // Adjusted parallax speed
                 }
             });
-
-            console.log('✓ Video plane created');
         }
 
-        // ==================== WORK ITEMS VIDEO INTERACTION ====================
+        // ==================== INTERACTIONS & SOUND ====================
         function setupVideoInteractions() {
-            const workItems = document.querySelectorAll('.work-item');
-            
-            workItems.forEach(item => {
+            document.querySelectorAll('.work-item').forEach(item => {
                 const video = item.querySelector('video');
-                
                 item.addEventListener('mouseenter', () => {
-                    if (video) {
-                        video.play().catch(err => console.log('Video play error:', err));
-                        if (isSoundPlaying) playHoverSound();
-                    }
+                    if (video) video.play();
+                    if (isSoundPlaying) playHoverSound();
                 });
-                
                 item.addEventListener('mouseleave', () => {
-                    if (video) {
-                        video.pause();
-                        video.currentTime = 0;
-                    }
+                    if (video) { video.pause(); video.currentTime = 0; }
                 });
             });
         }
 
-        // ==================== KINETIC TYPOGRAPHY ====================
         function setupKineticText() {
             const words = document.querySelectorAll('.kinetic-text .word');
-            
             words.forEach((word, i) => {
                 ScrollTrigger.create({
-                    trigger: '.scroll-section',
-                    start: "top center",
-                    end: "bottom center",
-                    scrub: 1,
+                    trigger: '.scroll-section', start: "top center", end: "bottom center", scrub: 1,
                     onUpdate: (self) => {
                         const progress = self.progress;
                         const wordProgress = (progress - (i / words.length)) * words.length;
-                        
                         if (wordProgress > 0 && wordProgress < 1) {
                             word.classList.add('active');
-                            gsap.to(word, {
-                                scale: 1 + Math.sin(wordProgress * Math.PI) * 0.3,
-                                rotation: Math.sin(wordProgress * Math.PI * 2) * 15,
-                                duration: 0.1
-                            });
+                            gsap.to(word, { scale: 1.3, rotation: Math.sin(wordProgress * Math.PI * 2) * 15, duration: 0.1 });
                         } else {
                             word.classList.remove('active');
                         }
@@ -1004,114 +720,62 @@
             });
         }
 
-        // ==================== SOUND SYSTEM ====================
-        function initAudio() {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-
+        function initAudio() { audioContext = new (window.AudioContext || window.webkitAudioContext)(); }
+        
         function playHoverSound() {
             if (!audioContext) return;
-            
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 800;
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.1);
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain); gain.connect(audioContext.destination);
+            osc.frequency.value = 800;
+            gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            osc.start(audioContext.currentTime); osc.stop(audioContext.currentTime + 0.1);
         }
 
         document.getElementById('soundToggle').addEventListener('click', function() {
             if (!audioContext) initAudio();
-            
             isSoundPlaying = !isSoundPlaying;
             this.classList.toggle('active', isSoundPlaying);
-            
-            if (isSoundPlaying) {
-                playBackgroundMusic();
-            } else {
-                if (soundSource) soundSource.stop();
-            }
+            if (isSoundPlaying && !soundSource) playBackgroundMusic();
+            else if (!isSoundPlaying && soundSource) { soundSource.stop(); soundSource = null; }
         });
 
         function playBackgroundMusic() {
             if (!audioContext) return;
-            
             soundSource = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            soundSource.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            soundSource.frequency.value = 110;
-            soundSource.type = 'sine';
-            gainNode.gain.value = 0.05;
-            
+            const gain = audioContext.createGain();
+            soundSource.connect(gain); gain.connect(audioContext.destination);
+            soundSource.frequency.value = 110; gain.gain.value = 0.05;
             soundSource.start();
         }
 
-        // ==================== ANIMATION LOOP ====================
         function animate() {
             requestAnimationFrame(animate);
-
-            // Mouse-based blob movement
             if (blobMesh) {
-                blobMesh.position.x = gsap.utils.interpolate(
-                    blobMesh.position.x,
-                    mouse.x * 2,
-                    0.05
-                );
-                blobMesh.position.y = gsap.utils.interpolate(
-                    blobMesh.position.y,
-                    -mouse.y * 2,
-                    0.05
-                );
+                blobMesh.position.x = gsap.utils.interpolate(blobMesh.position.x, mouse.x * 2, 0.05);
+                blobMesh.position.y = gsap.utils.interpolate(blobMesh.position.y, -mouse.y * 2, 0.05);
             }
-
-            // Auto-rotate liquid metal (fallback only, GLB version uses GSAP)
-            if (liquidMetalMesh && liquidMetalMesh.geometry && liquidMetalMesh.geometry.type === 'TorusGeometry') {
-                liquidMetalMesh.rotation.x += 0.005;
-                liquidMetalMesh.rotation.y += 0.008;
-            }
-
             renderer.render(scene, camera);
         }
 
-        // ==================== RESPONSIVE ====================
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // ==================== INITIALIZATION ====================
         window.addEventListener('load', () => {
-            console.log('🚀 Initializing Alex\'s Portfolio...');
-            console.log('Loading 3D assets from local assets/ folder:');
-            console.log('  - blob-model.glb');
-            console.log('  - vr-headset.glb');
-            console.log('  - liquid-metal.glb');
-            console.log('Loading Videos from Cloudinary:');
-            console.log('  - showreel-4k.mp4');
-            console.log('  - work-1.mp4, work-2.mp4, work-3.mp4');
-            
             initThree();
             setupKineticText();
             animate();
         });
-
-        // Performance optimization for mobile
-        const isMobile = /Android|iPhone/i.test(navigator.userAgent);
-        if (isMobile) {
-            console.log('📱 Mobile device detected - optimizing performance');
+        
+        // Mobile Optimization
+        if (/Android|iPhone/i.test(navigator.userAgent)) {
             renderer.setPixelRatio(1);
-            scene.fog = new THREE.Fog(0x0a0a0a, 5, 30);
         }
     </script>
 </body>
 </html>
+
