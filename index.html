@@ -401,17 +401,17 @@
             <h2 class="lab-title">SELECTED WORK</h2>
             <div class="work-grid">
                 <div class="work-item">
-                    <video muted loop playsinline crossorigin="anonymous">
+                    <video muted loop playsinline>
                         <source src="https://res.cloudinary.com/dbcisrglo/video/upload/v1771260723/work-1_ernuwd.mp4" type="video/mp4">
                     </video>
                 </div>
                 <div class="work-item">
-                    <video muted loop playsinline crossorigin="anonymous">
+                    <video muted loop playsinline>
                         <source src="https://res.cloudinary.com/dbcisrglo/video/upload/v1771260445/work-2_uqqkwc.mp4" type="video/mp4">
                     </video>
                 </div>
                 <div class="work-item">
-                    <video muted loop playsinline crossorigin="anonymous">
+                    <video muted loop playsinline>
                         <source src="https://res.cloudinary.com/dbcisrglo/video/upload/v1771260539/work-3_jscm5o.mp4" type="video/mp4">
                     </video>
                 </div>
@@ -431,12 +431,12 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-<script>
+    <script>
         // ==================== INITIALIZATION ====================
         gsap.registerPlugin(ScrollTrigger);
 
         let scene, camera, renderer, composer;
-        let blobMesh, vrHeadsetGroup, liquidMetalMesh, videoMesh;
+        let blobMesh, vrHeadsetGroup, liquidMetalMesh;
         let mouse = { x: 0, y: 0 };
         let raycaster, controls;
         let isExploded = false;
@@ -506,7 +506,6 @@
             createIridescentBlob();
             createVRHeadset();
             createLiquidMetal();
-            createVideoPlane();
 
             // Video hover effects
             setupVideoInteractions();
@@ -522,7 +521,7 @@
             }
         }
 
-        // ==================== BLOB (TEXTURE FIXED) ====================
+        // ==================== BLOB ====================
         function createIridescentBlob() {
             const loader = new THREE.GLTFLoader();
             loader.load(
@@ -531,7 +530,6 @@
                     blobMesh = gltf.scene;
                     blobMesh.position.set(0, 0, 0);
                     blobMesh.scale.set(2, 2, 2);
-                    // REMOVED MATERIAL OVERRIDE HERE
                     scene.add(blobMesh);
 
                     gsap.to(blobMesh.rotation, {
@@ -552,7 +550,7 @@
             );
         }
 
-        // ==================== VR HEADSET (TEXTURE FIXED) ====================
+        // ==================== VR HEADSET ====================
         function createVRHeadset() {
             const loader = new THREE.GLTFLoader();
             loader.load(
@@ -565,7 +563,6 @@
                     vrParts = [];
                     vrHeadsetGroup.traverse((child) => {
                         if (child.isMesh) {
-                            // REMOVED MATERIAL OVERRIDE HERE - Uses original textures now
                             vrParts.push({
                                 mesh: child,
                                 originalPos: child.position.clone(),
@@ -631,7 +628,7 @@
             });
         }
 
-        // ==================== LIQUID METAL (TEXTURE FIXED) ====================
+        // ==================== LIQUID METAL ====================
         function createLiquidMetal() {
             const loader = new THREE.GLTFLoader();
             loader.load(
@@ -640,7 +637,6 @@
                     liquidMetalMesh = gltf.scene;
                     liquidMetalMesh.position.set(3, 1, -2);
                     liquidMetalMesh.scale.set(1, 1, 1);
-                    // REMOVED MATERIAL OVERRIDE
                     scene.add(liquidMetalMesh);
 
                     gsap.to(liquidMetalMesh.rotation, {
@@ -651,40 +647,6 @@
                 undefined,
                 (error) => { console.log('Error loading metal'); assetLoaded(); }
             );
-        }
-
-        // ==================== VIDEO PLANE (SIZE FIXED) ====================
-        function createVideoPlane() {
-            const video = document.createElement('video');
-            video.src = 'https://res.cloudinary.com/dbcisrglo/video/upload/v1771260542/showreel-4k_qjfpu1.mp4';
-            video.loop = true;
-            video.muted = true;
-            video.playsInline = true;
-            video.crossOrigin = "anonymous";
-            video.play().catch(err => console.log('Video autoplay prevented:', err));
-
-            const videoTexture = new THREE.VideoTexture(video);
-            videoTexture.minFilter = THREE.LinearFilter;
-            videoTexture.magFilter = THREE.LinearFilter;
-
-            // Geometry is 16x9
-            const geometry = new THREE.PlaneGeometry(16, 9);
-            const material = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.DoubleSide });
-
-            videoMesh = new THREE.Mesh(geometry, material);
-            videoMesh.position.set(0, 0, -12); // Pushed it back slightly more
-            
-            // --- FIX: INCREASED SCALE FROM 0.3 TO 2.5 ---
-            videoMesh.scale.set(2.5, 2.5, 2.5); 
-            
-            scene.add(videoMesh);
-
-            ScrollTrigger.create({
-                trigger: "body", start: "top top", end: "bottom bottom", scrub: 1,
-                onUpdate: (self) => {
-                    if (videoMesh) videoMesh.position.y = self.progress * 8 - 4; // Adjusted parallax speed
-                }
-            });
         }
 
         // ==================== INTERACTIONS & SOUND ====================
@@ -778,4 +740,3 @@
     </script>
 </body>
 </html>
-
